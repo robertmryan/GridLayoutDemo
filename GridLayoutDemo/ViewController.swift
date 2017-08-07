@@ -8,18 +8,46 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+struct CustomObject {
+    let text: String
+    let color: UIColor
+}
 
+class ViewController: UICollectionViewController {
+
+    lazy var objects: [CustomObject] = (0 ..< 15).map { self.randomObject(with: "\($0)") }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-    }
+        
+        Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+            let indexPath = IndexPath(item: self.objects.count, section: 0)
+            self.objects.append(self.randomObject(with: "New \(indexPath.item)"))
+            self.collectionView?.insertItems(at: [indexPath])
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+            if self.objects.count > 27 { timer.invalidate() }
+        }
     }
-
+    
+    private func randomObject(with string: String) -> CustomObject {
+        let color = UIColor(red: CGFloat(arc4random_uniform(128)) / 255,
+                       green: CGFloat(arc4random_uniform(128)) / 255,
+                       blue: CGFloat(arc4random_uniform(128)) / 255,
+                       alpha: 1)
+        return CustomObject(text: string, color: color)
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return objects.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "CustomCell", for: indexPath) as! CustomCell
+        let object = objects[indexPath.item]
+        cell.label.text = object.text
+        cell.backgroundColor = object.color
+        return cell
+    }
 
 }
 
